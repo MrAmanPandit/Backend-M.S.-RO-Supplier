@@ -24,7 +24,17 @@ export const streamBookings = (req, res) => {
   };
   clients.push(newClient);
 
+  // Heartbeat every 30 seconds — prevents proxy/CDN timeout & rapid browser reconnects
+  const heartbeat = setInterval(() => {
+    try {
+      res.write(':ping\n\n');
+    } catch {
+      clearInterval(heartbeat);
+    }
+  }, 30000);
+
   req.on('close', () => {
+    clearInterval(heartbeat);
     clients = clients.filter(c => c.id !== clientId);
   });
 };
