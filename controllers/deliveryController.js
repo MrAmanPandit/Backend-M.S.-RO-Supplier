@@ -416,6 +416,14 @@ export const logDailyDelivery = async (req, res) => {
         record.previousDue = previousDue;
         record.previousAdvance = previousAdvance;
       } else {
+        // Capture delivery timestamp as formatted string for calendar display
+        const nowTime = new Date();
+        const hours = nowTime.getHours();
+        const minutes = String(nowTime.getMinutes()).padStart(2, '0');
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        const formattedHour = String(hours % 12 || 12).padStart(2, '0');
+        const deliveryTime = inputStatus === 'delivered' ? `${formattedHour}:${minutes} ${ampm}` : null;
+
         record = new DeliveryRecord({
           customer: customerId,
           customerName: customer.customerName,
@@ -427,6 +435,8 @@ export const logDailyDelivery = async (req, res) => {
           totalAmount,
           status: inputStatus,
           deliveredBy: req.user._id,
+          deliveredByName: req.user.name || null,
+          deliveryTime,
           notes: `Daily update — ${inputStatus}`,
           previousDue,
           previousAdvance,
@@ -495,6 +505,62 @@ export const logDailyDelivery = async (req, res) => {
     res.status(500).json({
       status: 'error',
       message: 'Internal server error while logging daily delivery',
+    });
+  }
+};
+
+/**
+ * @desc    Get monthly delivery calendar data for the logged-in customer
+ * @route   GET /api/deliveries/calendar?month=YYYY-MM
+ * @access  Private (Customer self-service)
+ */
+export const getCustomerCalendar = async (req, res) => {
+  try {
+    const customerId = req.user._id;
+
+    // Parse requested month or default to current month
+    let year, month;
+    if (req.query.month && /^\d{4}-\d{2}$/.test(req.query.month)) {
+      [year, month] = req.query.month.split('-').map(Number);
+    } else {
+      const now = new Date();
+      year = now.getFullYear();
+      month = now.getMonth() + 1;
+    }
+
+    // Build date string prefix for the month e.g. "2026-06"
+    const monthPrefix = `${year}-${String(month).padStart(2, '0')}`;
+
+    // Fetch all delivery records for this customer in the requested month
+    const records = await DeliveryRecord.find({
+      customer: customerId,
+      deliveryDateString: { $regex: `^${monthPrefix}` },
+    })
+      .select('deliveryDateString status numberOfCans deliveryTime deliveredByName notes')
+      .sort({ deliveryDateString: 1 })
+      .lean();
+
+    // Shape records for the calendar UI
+    const calendarData = records.map((r) => ({
+      date: r.deliveryDateString,
+      status: r.status,
+      numberOfCans: r.numberOfCans,
+      deliveryTime: r.deliveryTime || null,
+      deliveredBy: r.deliveredByName || null,
+      notes: r.notes || null,
+    }));
+
+    res.status(200).json({
+      status: 'success',
+      month: monthPrefix,
+      count: calendarData.length,
+      data: calendarData,
+    });
+  } catch (error) {
+    console.error(`\x1b[31m[Get Customer Calendar Error] %s\x1b[0m`, error.stack);
+    res.status(500).json({
+      status: 'error',
+      message: 'Internal server error while fetching calendar data',
     });
   }
 };

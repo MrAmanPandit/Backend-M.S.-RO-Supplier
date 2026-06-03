@@ -75,6 +75,18 @@ const deliveryRecordSchema = new mongoose.Schema(
       trim: true,
       maxlength: [200, 'Notes cannot exceed 200 characters'],
     },
+    deliveryTime: {
+      type: String,
+      trim: true,
+      default: null,
+      // Stored as formatted string e.g. "07:45 AM" — captured at delivery moment
+    },
+    deliveredByName: {
+      type: String,
+      trim: true,
+      default: null,
+      // Snapshot of deliverer name for fast display (avoids populate on calendar)
+    },
     cancelledAt: {
       type: Date,
       default: null,

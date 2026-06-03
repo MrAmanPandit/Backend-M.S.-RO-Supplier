@@ -5,6 +5,7 @@ import {
   updateDelivery,
   getDailyCustomers,
   logDailyDelivery,
+  getCustomerCalendar,
 } from '../controllers/deliveryController.js';
 import { protect } from '../middleware/auth.js';
 
@@ -19,4 +20,8 @@ router.put('/:id', protect, updateDelivery);
 router.get('/daily-customers', protect, getDailyCustomers);
 router.post('/daily-update', protect, logDailyDelivery);
 
+// Customer self-service calendar endpoint
+router.get('/calendar', protect, getCustomerCalendar);
+
 export default router;
+
