@@ -55,6 +55,7 @@ import deliveryRoutes from './routes/deliveryRoutes.js';
 import dashboardRoutes from './routes/dashboardRoutes.js';
 import paymentRoutes from './routes/paymentRoutes.js';
 import bookingRoutes from './routes/bookingRoutes.js';
+import adminRoutes from './routes/adminRoutes.js';
 import { protect, authorize } from './middleware/auth.js';
 
 // Body Parsing Middleware (JSON and URL-encoded)
@@ -68,6 +69,7 @@ app.use('/api/deliveries', deliveryRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/bookings', bookingRoutes);
+app.use('/api/admins', adminRoutes);
 
 // Standard Health-Check Endpoint
 app.get('/api/health', (req, res) => {
