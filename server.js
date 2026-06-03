@@ -81,10 +81,17 @@ app.get('/api/health', (req, res) => {
 
 // Secure Test Endpoint (Requires Active Token Session)
 app.get('/api/protected/health-secure', protect, (req, res) => {
+  // Synthesize role from token claims, as Mongoose documents might not store 'role' (like Customer model)
+  const userPayload = {
+    ...req.user.toObject(),
+    id: req.user._id,
+    role: req.tokenClaims ? req.tokenClaims.role : (req.user.role || 'guest')
+  };
+
   res.status(200).json({
     status: 'success',
     message: 'Access granted! Secure database session active.',
-    user: req.user
+    user: userPayload
   });
 });
 

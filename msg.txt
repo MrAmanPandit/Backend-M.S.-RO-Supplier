@@ -1,0 +1,1 @@
+fix: resolve SPA blank screen on refresh due to missing role claim in health-secure  
