@@ -19,10 +19,16 @@ const NODE_ENV = process.env.NODE_ENV || 'development';
 app.use(helmet());
 
 // Cross-Origin Resource Sharing Middleware
+const getOrigins = () => {
+  if (NODE_ENV === 'production') {
+    const urls = process.env.FRONTEND_URL || 'https://msro.techbuilt.in';
+    return urls.split(',').map(url => url.trim().replace(/\/$/, ''));
+  }
+  return ['http://localhost:5173', 'http://localhost:3000'];
+};
+
 app.use(cors({
-  origin: NODE_ENV === 'production' 
-    ? process.env.FRONTEND_URL 
-    : ['http://localhost:5173', 'http://localhost:3000'],
+  origin: getOrigins(),
   credentials: true
 }));
 
