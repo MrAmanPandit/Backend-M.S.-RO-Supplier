@@ -1,1 +1,0 @@
-fix: SSE heartbeat to prevent proxy timeout  
