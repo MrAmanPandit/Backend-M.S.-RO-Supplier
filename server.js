@@ -15,21 +15,31 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 const NODE_ENV = process.env.NODE_ENV || 'development';
 
-// Security Headers Middleware
-app.use(helmet());
-
 // Cross-Origin Resource Sharing Middleware
-const getOrigins = () => {
-  if (NODE_ENV === 'production') {
-    const urls = process.env.FRONTEND_URL || 'https://msro.techbuilt.in';
-    return urls.split(',').map(url => url.trim().replace(/\/$/, ''));
-  }
-  return ['http://localhost:5173', 'http://localhost:3000'];
-};
+const allowedOrigins = [
+  'https://msro.techbuilt.in',
+  'http://msro.techbuilt.in',
+  'http://localhost:5173',
+  'http://localhost:3000'
+];
+
+if (process.env.FRONTEND_URL) {
+  process.env.FRONTEND_URL.split(',').forEach(url => {
+    const cleanUrl = url.trim().replace(/\/$/, '');
+    if (cleanUrl && !allowedOrigins.includes(cleanUrl)) {
+      allowedOrigins.push(cleanUrl);
+    }
+  });
+}
 
 app.use(cors({
-  origin: getOrigins(),
+  origin: allowedOrigins,
   credentials: true
+}));
+
+// Security Headers Middleware
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
 
 // HTTP Request Logger Middleware
