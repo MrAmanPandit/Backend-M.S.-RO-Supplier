@@ -25,10 +25,8 @@ export const addDelivery = async (req, res) => {
       const customer = await Customer.findById(customerId).session(session);
 
       const today = new Date();
-      const year = today.getFullYear();
-      const month = String(today.getMonth() + 1).padStart(2, '0');
-      const day = String(today.getDate()).padStart(2, '0');
-      const deliveryDateString = `${year}-${month}-${day}`;
+      const formatter = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata' });
+      const deliveryDateString = formatter.format(today);
 
       const normalizedStatus = status ? status.toLowerCase() : 'delivered';
 
@@ -255,10 +253,8 @@ export const getDailyCustomers = async (req, res) => {
   try {
     // Get start and end of today
     const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const day = String(today.getDate()).padStart(2, '0');
-    const deliveryDateString = `${year}-${month}-${day}`;
+    const formatter = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata' });
+    const deliveryDateString = formatter.format(today);
 
     // Fetch all active customers with their customized pricing details
     const customers = await Customer.find({})
@@ -333,10 +329,8 @@ export const logDailyDelivery = async (req, res) => {
       const customer = await Customer.findById(customerId).session(session);
 
       const today = new Date();
-      const year = today.getFullYear();
-      const month = String(today.getMonth() + 1).padStart(2, '0');
-      const day = String(today.getDate()).padStart(2, '0');
-      const deliveryDateString = `${year}-${month}-${day}`;
+      const formatter = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata' });
+      const deliveryDateString = formatter.format(today);
 
       // Upsert: check if today's record already exists
       let record = await DeliveryRecord.findOne({ customer: customerId, deliveryDateString }).session(session);

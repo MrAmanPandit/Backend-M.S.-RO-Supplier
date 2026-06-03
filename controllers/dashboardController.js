@@ -22,12 +22,10 @@ export const getDashboardStats = async (req, res) => {
     ]);
     const totalDues = dueAmountAggregate.length > 0 ? dueAmountAggregate[0].totalDues : 0;
 
-    // 3. Define date boundary for "Today" using local date string format YYYY-MM-DD
+    // 3. Define date boundary for "Today" using local date string format YYYY-MM-DD in IST
     const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const day = String(today.getDate()).padStart(2, '0');
-    const todayDateString = `${year}-${month}-${day}`;
+    const formatter = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata' });
+    const todayDateString = formatter.format(today);
 
     // 4. Today's Delivery counts supporting both casing formats ('delivered' / 'Delivered')
     const todayDeliveriesCount = await DeliveryRecord.countDocuments({
