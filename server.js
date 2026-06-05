@@ -8,9 +8,6 @@ import connectDB from './config/db.js';
 // Load environment variables from .env
 dotenv.config();
 
-// Establish connection to MongoDB
-connectDB();
-
 const app = express();
 const PORT = process.env.PORT || 5000;
 const NODE_ENV = process.env.NODE_ENV || 'development';
@@ -127,7 +124,18 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Start listening for connections
-app.listen(PORT, () => {
-  console.log(`\x1b[36m%s\x1b[0m`, `🚀 Server listening in ${NODE_ENV} mode on http://localhost:${PORT}`);
-});
+// Connect to MongoDB first, THEN start listening for connections
+// This prevents requests being served before the DB is ready (race condition fix)
+const startServer = async () => {
+  try {
+    await connectDB();
+    app.listen(PORT, () => {
+      console.log(`\x1b[36m%s\x1b[0m`, `🚀 Server listening in ${NODE_ENV} mode on http://localhost:${PORT}`);
+    });
+  } catch (error) {
+    console.error(`\x1b[31m%s\x1b[0m`, `✖ Failed to start server: ${error.message}`);
+    process.exit(1);
+  }
+};
+
+startServer();
