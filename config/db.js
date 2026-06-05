@@ -11,9 +11,9 @@ const connectDB = async () => {
     mongoose.set('bufferCommands', false);
 
     const conn = await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/water-cms', {
-      serverSelectionTimeoutMS: 5000 // Fast 5-second connection failure feedback
+      serverSelectionTimeoutMS: 10000 // Fast 5-second connection failure feedback
     });
-    
+
     console.log(`\x1b[32m%s\x1b[0m`, `✔ MongoDB Connected: ${conn.connection.host}`);
   } catch (error) {
     console.error(`\x1b[31m%s\x1b[0m`, `✖ MongoDB Connection Error: ${error.message}`);
@@ -37,32 +37,32 @@ export const runInTransaction = async (work) => {
     await session.commitTransaction();
     return result;
   } catch (error) {
-    const isUnsupported = 
+    const isUnsupported =
       error.message.includes('Transaction numbers are only allowed on a replica set member') ||
       error.codeName === 'TransactionSystemFailed' ||
       error.message.includes('replica set') ||
       error.message.includes('sessions are not supported') ||
       error.message.includes('does not support sessions') ||
-      error.code === 20 || 
+      error.code === 20 ||
       error.code === 263;
 
     if (isUnsupported) {
       console.warn('⚠️ Mongoose Transactions not supported in this environment (Standalone local MongoDB). Running fallback atomic operations.');
       try {
         await session.abortTransaction();
-      } catch (e) {}
+      } catch (e) { }
       await session.endSession();
       return await work(null);
     } else {
       try {
         await session.abortTransaction();
-      } catch (e) {}
+      } catch (e) { }
       throw error;
     }
   } finally {
     try {
       await session.endSession();
-    } catch (e) {}
+    } catch (e) { }
   }
 };
 
